@@ -3,12 +3,10 @@ package com.teya.ledger.controller;
 import com.teya.ledger.dto.AccountDTO;
 import com.teya.ledger.dto.CreateTransactionRequest;
 import com.teya.ledger.dto.TransactionDTO;
-import com.teya.ledger.exception.AccountNotFoundException;
 import com.teya.ledger.service.LedgerService;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -16,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/ledger")
-@Validated
 public class LedgerController {
 
     private final LedgerService ledgerService;
@@ -33,34 +30,18 @@ public class LedgerController {
 
     @GetMapping("/accounts/{accountId}/balance")
     public ResponseEntity<BigDecimal> getBalance(@PathVariable String accountId) {
-        try {
-            return ResponseEntity.ok().body(ledgerService.getBalance(accountId));
-        } catch (AccountNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(ledgerService.getBalance(accountId));
     }
 
     @GetMapping("/accounts/{accountId}/transactions")
     public ResponseEntity<List<TransactionDTO>> getTransactions(@PathVariable String accountId) {
-        List<TransactionDTO> transactions;
-        try {
-            transactions = ledgerService.getTransactions(accountId);
-            return ResponseEntity.ok().body(transactions);
-
-        } catch (AccountNotFoundException e) {
-            return  ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(ledgerService.getTransactions(accountId));
     }
 
     @PostMapping("/accounts/{accountId}/transactions")
-    public ResponseEntity<TransactionDTO> createTransaction(@NotBlank @PathVariable String accountId,
-                                                            @RequestBody CreateTransactionRequest request) {
-        TransactionDTO createdTransaction = null;
-        try {
-            createdTransaction = ledgerService.createTransaction(request, accountId);
-        } catch (AccountNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<TransactionDTO> createTransaction(@PathVariable String accountId,
+                                                            @Valid @RequestBody CreateTransactionRequest request) {
+        TransactionDTO createdTransaction = ledgerService.createTransaction(request, accountId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }
 }
