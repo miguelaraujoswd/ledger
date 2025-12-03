@@ -9,6 +9,16 @@ A simple REST ledger API.
 - View current balance for a given account
 - View transaction history for a given account
 
+## Assumptions and Design Decisions
+
+1. **In-memory storage**: Data is stored in a `ConcurrentHashMap` structures and will be lost when the application restarts.
+
+2. **Account IDs**: Generated as UUIDs to ensure uniqueness without coordination.
+
+3. **No negative balance**: Withdrawals that exceed the current balance are rejected.
+
+4. **Atomic operations**: Basic thread safety is provided via a `ConcurrentHashMap`, but complex atomic operations (like simultaneous deposits/withdrawals) are not guaranteed to be atomic and thread safe.
+
 ## Getting Started
 
 ### Prerequisites
@@ -119,14 +129,3 @@ POST /api/v1/ledger/accounts/{accountId}/transactions
 - `404 Not Found` - Account doesn't exist
 - `400 Bad Request` - Invalid amount (zero, negative, or null)
 - `400 Bad Request` - Insufficient balance for withdrawal
-
-
-## Assumptions and Design Decisions
-
-1. **In-memory storage**: Data is stored in `ConcurrentHashMap` structures and will be lost when the application restarts.
-
-2. **Account IDs**: Generated as UUIDs to ensure uniqueness without coordination.
-
-3. **No negative balance**: Withdrawals that exceed the current balance are rejected.
-
-4. **Atomic operations**: Basic thread safety is provided via `ConcurrentHashMap`, but complex atomic operations (like simultaneous deposits/withdrawals) are not guaranteed to be atomic and thread safe.
