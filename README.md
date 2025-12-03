@@ -129,3 +129,124 @@ POST /api/v1/ledger/accounts/{accountId}/transactions
 - `404 Not Found` - Account doesn't exist
 - `400 Bad Request` - Invalid amount (zero, negative, or null)
 - `400 Bad Request` - Insufficient balance for withdrawal
+
+## Testing with cURL
+
+Step-by-step commands to test the API:
+
+### 1. Create an account
+
+```bash
+curl -X POST http://localhost:8080/api/v1/ledger/accounts
+```
+
+Response:
+```json
+{"accountId":"a]1b2c3d4-e5f6-7890-abcd-ef1234567890"}
+```
+
+Save the account ID for the next steps:
+```bash
+ACCOUNT_ID="your-account-id-here"
+```
+
+### 2. Check initial balance (should be 0)
+
+```bash
+curl http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/balance
+```
+
+Response:
+```json
+0
+```
+
+### 3. Make a deposit of 100.00
+
+```bash
+curl -X POST http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/transactions \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100.00, "type": "DEPOSIT"}'
+```
+
+Response:
+```json
+{"id":"...","accountId":"...","amount":100.00,"type":"DEPOSIT","timestamp":"..."}
+```
+
+### 4. Make another deposit of 50.00
+
+```bash
+curl -X POST http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/transactions \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 50.00, "type": "DEPOSIT"}'
+```
+
+### 5. Check balance (should be 150.00)
+
+```bash
+curl http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/balance
+```
+
+Response:
+```json
+150.00
+```
+
+### 6. Make a withdrawal of 30.00
+
+```bash
+curl -X POST http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/transactions \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 30.00, "type": "WITHDRAWAL"}'
+```
+
+### 7. Check balance (should be 120.00)
+
+```bash
+curl http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/balance
+```
+
+Response:
+```json
+120.00
+```
+
+### 8. View transaction history
+
+```bash
+curl http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/transactions
+```
+
+Response (most recent first):
+```json
+[
+  {"id":"...","accountId":"...","amount":30.00,"type":"WITHDRAWAL","timestamp":"..."},
+  {"id":"...","accountId":"...","amount":50.00,"type":"DEPOSIT","timestamp":"..."},
+  {"id":"...","accountId":"...","amount":100.00,"type":"DEPOSIT","timestamp":"..."}
+]
+```
+
+### 9. Try to withdraw more than the balance (should fail)
+
+```bash
+curl -X POST http://localhost:8080/api/v1/ledger/accounts/$ACCOUNT_ID/transactions \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 500.00, "type": "WITHDRAWAL"}'
+```
+
+Response (400 Bad Request):
+```json
+{"status":400,"message":"Account has insufficient balance for this transaction","timestamp":"..."}
+```
+
+### 10. Try to access a non-existent account (should fail)
+
+```bash
+curl http://localhost:8080/api/v1/ledger/accounts/non-existent-id/balance
+```
+
+Response (404 Not Found):
+```json
+{"status":404,"message":"Account not found with id: non-existent-id","timestamp":"..."}
+```
