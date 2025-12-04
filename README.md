@@ -13,11 +13,13 @@ A simple REST ledger API.
 
 1. **In-memory storage**: Data is stored in a `ConcurrentHashMap` structures and will be lost when the application restarts.
 
-2. **Account IDs**: Generated as UUIDs to ensure uniqueness without coordination.
+2. **Account IDs**: Generated as UUIDs to ensure uniqueness.
 
 3. **No negative balance**: Withdrawals that exceed the current balance are rejected.
 
 4. **Atomic operations**: Basic thread safety is provided via a `ConcurrentHashMap`, but complex atomic operations (like simultaneous deposits/withdrawals) are not guaranteed to be atomic and thread safe.
+
+5. **No specified currency**: For the sake of simplicity, there is no mention of currency in the ledger app. 
 
 ## Getting Started
 

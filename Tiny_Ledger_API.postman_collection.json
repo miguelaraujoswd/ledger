@@ -1,0 +1,464 @@
+{
+	"info": {
+		"_postman_id": "tiny-ledger-api-collection",
+		"name": "Tiny Ledger API",
+		"description": "A step-by-step collection to test the Tiny Ledger API. Run the requests in order - the account ID is automatically captured from the first request.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api/v1/ledger",
+			"type": "string"
+		},
+		{
+			"key": "accountId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Create Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has accountId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.accountId).to.be.a('string');",
+							"    pm.collectionVariables.set(\"accountId\", jsonData.accountId);",
+							"    console.log(\"Account ID saved: \" + jsonData.accountId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts"]
+				},
+				"description": "Creates a new account with a unique ID and zero balance. The account ID is automatically saved for use in subsequent requests."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Check Initial Balance (should be 0)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Initial balance is 0\", function () {",
+							"    var balance = pm.response.json();",
+							"    pm.expect(balance).to.eql(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/balance",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "balance"]
+				},
+				"description": "Retrieves the current balance for the account. Should be 0 for a newly created account."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Deposit 100.00",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Transaction is a deposit of 100.00\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).to.eql(100.0);",
+							"    pm.expect(jsonData.type).to.eql(\"DEPOSIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 100.00,\n    \"type\": \"DEPOSIT\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Makes a deposit of 100.00 to the account."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Deposit 50.00",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Transaction is a deposit of 50.00\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).to.eql(50.0);",
+							"    pm.expect(jsonData.type).to.eql(\"DEPOSIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 50.00,\n    \"type\": \"DEPOSIT\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Makes another deposit of 50.00 to the account."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Check Balance (should be 150.00)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Balance is 150.00\", function () {",
+							"    var balance = pm.response.json();",
+							"    pm.expect(balance).to.eql(150.0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/balance",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "balance"]
+				},
+				"description": "Retrieves the current balance. After two deposits (100 + 50), it should be 150.00."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Withdraw 30.00",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Transaction is a withdrawal of 30.00\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).to.eql(30.0);",
+							"    pm.expect(jsonData.type).to.eql(\"WITHDRAWAL\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 30.00,\n    \"type\": \"WITHDRAWAL\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Makes a withdrawal of 30.00 from the account."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Check Balance (should be 120.00)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Balance is 120.00\", function () {",
+							"    var balance = pm.response.json();",
+							"    pm.expect(balance).to.eql(120.0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/balance",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "balance"]
+				},
+				"description": "Retrieves the current balance. After the withdrawal (150 - 30), it should be 120.00."
+			},
+			"response": []
+		},
+		{
+			"name": "8. View Transaction History",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Has 3 transactions\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"    pm.expect(jsonData.length).to.eql(3);",
+							"});",
+							"",
+							"pm.test(\"Transactions are sorted by timestamp (most recent first)\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    // Most recent should be the withdrawal",
+							"    pm.expect(jsonData[0].type).to.eql(\"WITHDRAWAL\");",
+							"    pm.expect(jsonData[0].amount).to.eql(30.0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Retrieves all transactions for the account, sorted by timestamp (most recent first)."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Withdraw 500.00 (should fail - insufficient balance)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 Bad Request\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message mentions insufficient balance\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include(\"insufficient balance\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 500.00,\n    \"type\": \"WITHDRAWAL\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Attempts to withdraw more than the current balance. Should fail with 400 Bad Request."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Get Balance for Non-Existent Account (should fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 Not Found\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Error message mentions account not found\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.include(\"Account not found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/non-existent-id/balance",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "non-existent-id", "balance"]
+				},
+				"description": "Attempts to get the balance of a non-existent account. Should fail with 404 Not Found."
+			},
+			"response": []
+		},
+		{
+			"name": "11. Deposit with Invalid Amount (should fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 Bad Request\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": -50.00,\n    \"type\": \"DEPOSIT\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Attempts to deposit a negative amount. Should fail with 400 Bad Request."
+			},
+			"response": []
+		},
+		{
+			"name": "12. Deposit with Zero Amount (should fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 Bad Request\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 0,\n    \"type\": \"DEPOSIT\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{accountId}}/transactions",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{accountId}}", "transactions"]
+				},
+				"description": "Attempts to deposit zero. Should fail with 400 Bad Request."
+			},
+			"response": []
+		}
+	]
+}
+
